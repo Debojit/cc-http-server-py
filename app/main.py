@@ -23,9 +23,9 @@ def main() -> None:
 
         http_req:list = req_msg.split(CRLF)
         http_req_line:str = http_req[0]
-        req_line_parts:list = http_req_line.split(" ")
-
-        match req_line_parts[1]:
+        url:str = http_req_line.split(" ")[1]
+        
+        match url:
             case "/":
                 print("OK")
                 client.send(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
