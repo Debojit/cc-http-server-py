@@ -1,6 +1,5 @@
 import socket
 
-
 def main() -> None:
     print("Logs from your program will appear here!")
 
@@ -9,7 +8,6 @@ def main() -> None:
     
     while True:
         client, _ = server_socket.accept() # Accept incoming connections
-        # client.send("HTTP/1.1 200 OK\r\n\r\n".encode("utf8"))
 
         req_msg:str = ""
         end_of_msg:bool = False
@@ -24,13 +22,17 @@ def main() -> None:
         http_req:list = req_msg.split(CRLF)
         http_req_line:str = http_req[0]
         url:str = http_req_line.split(" ")[1]
-        
-        match url:
-            case "/":
-                print("OK")
-                client.send(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
+
+        if url == "/":
+            pass
+
+        match url.split("/")[1]:
+            case "":
+                client.send("HTTP/1.1 200 OK\r\n\r\n".encode("utf8"))
+            case "echo":
+                echo_msg:str = url.split("/")[2]
+                client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(echo_msg)}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
             case _:
-                print("Not Found")
                 client.send(f"HTTP/1.1 404 Not Found{CRLF}{CRLF}".encode("utf8"))
 
 
