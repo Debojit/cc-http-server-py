@@ -28,10 +28,10 @@ def main() -> None:
         match req_line_parts[1]:
             case "/":
                 print("OK")
-                client.sendall(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
+                client.send(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
             case _:
                 print("Not Found")
-                client.sendall(f"HTTP/1.1 404 Not Found{CRLF}{CRLF}".encode("utf8"))
+                client.send(f"HTTP/1.1 404 Not Found{CRLF}{CRLF}".encode("utf8"))
 
 
 if __name__ == "__main__":
