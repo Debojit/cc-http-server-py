@@ -1,5 +1,6 @@
 import socket
 from threading import Thread
+from pathlib import Path
 
 def parse_request(http_msg:str) -> dict:
     http_req:list = http_msg.split(CRLF*2)
@@ -44,6 +45,15 @@ def handle_request(client:socket.socket) -> None:
             case _ if url == "/user-agent":
                 usr_agent:str = http_req["headers"]["user-agent"]
                 client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(usr_agent)}{CRLF}{CRLF}{usr_agent}".encode("utf8"))
+            case _ if url.startswith("/files"):
+                file_name:str = url.split("/files")[-1]
+                return_file:Path = Path(f"/tmp/data/codecrafters.io/http-server-tester/{file_name}")
+                if return_file.exists():
+                    with open(return_file, mode="r") as output_file:
+                        file_data:str = "".join(output_file.readlines())
+                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: application/octet-stream{CRLF}Content-Length: {len(file_data)}{CRLF}{CRLF}{file_data}".encode("utf8"))
+                else:
+                    client.send(f"HTTP/1.1 404 Not Found{CRLF}{CRLF}".encode("utf8"))
             case _:
                 client.send(f"HTTP/1.1 404 Not Found{CRLF}{CRLF}".encode("utf8"))
 
