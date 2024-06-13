@@ -1,5 +1,6 @@
 import sys
-import socket
+import socket\
+import gzip
 from threading import Thread
 from pathlib import Path
 
@@ -36,7 +37,8 @@ def handle_get(client:socket, http_req:dict) -> None:
                     content_encodings:list = [item.strip() for item in content_encoding.split(",")]
                     content_encoding = "".join(filter(lambda item: (item.strip() == "gzip"), content_encodings))
                 if content_encoding == "gzip":
-                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Encoding: {content_encoding}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
+                    compressed_msg:bytes = gzip.compress(bytes(echo_msg))
+                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Encoding: {content_encoding}{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(compressed_msg)}{CRLF}{CRLF}{compressed_msg}".encode("utf8"))
                 else:
                     client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(echo_msg)}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
             case _ if url == "/user-agent":
