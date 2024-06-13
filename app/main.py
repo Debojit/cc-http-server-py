@@ -29,14 +29,14 @@ def handle_get(client:socket, http_req:dict) -> None:
                 client.send(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
             case _ if url.startswith("/echo"):
                 echo_msg:str = http_req["url"].split("/")[2]
-
+                
                 content_encoding:str = None
                 if "accept-encoding" in http_req["headers"]:
                     content_encoding = http_req["headers"]["accept-encoding"]
-                    content_encoding = "".join(content_encoding.split(",").filter(lambda item : item == "gzip"))
-                    
+                    content_encodings:list = [item.strip() for item in content_encoding.split(",")]
+                    content_encoding = "".join(filter(lambda item: (item.strip() == "gzip"), content_encodings))
                 if content_encoding == "gzip":
-                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Encoding: gzip{CRLF}{CRLF}{echo_msg}".encode("utf8"))
+                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Encoding: {content_encoding}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
                 else:
                     client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(echo_msg)}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
             case _ if url == "/user-agent":
