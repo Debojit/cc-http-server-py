@@ -3,7 +3,6 @@ import socket
 from threading import Thread
 from pathlib import Path
 
-
 def parse_request(http_msg:str) -> dict:
     http_req:list = http_msg.split(CRLF*2)
     
@@ -29,8 +28,15 @@ def handle_get(client:socket, http_req:dict) -> None:
             case _ if url == "/":
                 client.send(f"HTTP/1.1 200 OK{CRLF}{CRLF}".encode("utf8"))
             case _ if url.startswith("/echo"):
-                echo_msg:str = http_req["url"].split("/")[2]
-                client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(echo_msg)}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
+                print(f"{http_req["headers"]=}")
+                content_encoding:str = None
+                if "accept-encoding" in http_req["headers"]:
+                    content_encoding= http_req["headers"]["accept-encoding"]
+                if content_encoding == "gzip":
+                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Encoding: gzip{CRLF}{CRLF}".encode("utf8"))
+                else:
+                    echo_msg:str = http_req["url"].split("/")[2]
+                    client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(echo_msg)}{CRLF}{CRLF}{echo_msg}".encode("utf8"))
             case _ if url == "/user-agent":
                 usr_agent:str = http_req["headers"]["user-agent"]
                 client.send(f"HTTP/1.1 200 OK{CRLF}Content-Type: text/plain{CRLF}Content-Length: {len(usr_agent)}{CRLF}{CRLF}{usr_agent}".encode("utf8"))
